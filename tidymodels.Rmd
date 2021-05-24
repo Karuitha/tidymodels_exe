@@ -1,0 +1,156 @@
+---
+title: "Practising Tidymodels on the MPG Data"
+author: "John Karuitha"
+date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+```
+
+## The data
+
+The `mpg` dataset is inbuilt in R. The dataset has `r nrow(mpg)` observations and `r ncol(mpg)` variables. The table below shows the first six (6) rows of the dataset. 
+
+```{r}
+head(mpg) %>% 
+    
+    knitr::kable(caption = "First 6 Rows of the MPG Data", booktabs = TRUE) %>% 
+    
+    kableExtra::kable_styling(bootstrap_options = "striped", full_width = TRUE)
+```
+
+
+We start by splitting the data using the tidymodels `initial_split` function.
+
+```{r}
+set.seed(96, sample.kind = "Rounding")
+
+mpg_split <- initial_split(mpg, prop = 0.6, strata = cty)
+
+mpg_training <- mpg_split %>% training()
+
+mpg_test <- mpg_split %>% testing()
+
+```
+
+The training data has `r nrow(mpg_training)` observations while the testing data has `r nrow(mpg_test)`. 
+
+## Training a linear Regression Model
+
+I use the training data to fit a linear regression model. 
+
+```{r, results = 'asis'}
+## set up the model
+linear_model <- linear_reg() %>% 
+    
+    ## Set the engine
+    set_engine("lm") %>% 
+    
+    ## Set the mode: regression or classification
+    set_mode("regression")
+
+## Run the model
+mpg_linear_model <- linear_model %>% 
+    
+    ## Fit the model
+    fit(hwy ~ displ + factor(year) + factor(drv), data = mpg_training)
+
+## print out the model coefficients
+mpg_linear_model
+
+## Tibble of regression output
+broom::tidy(mpg_linear_model) %>% 
+    
+    ## Make a nice table using knitr
+    knitr::kable(caption = "Regression Output on Training Data")
+```
+
+## Prediction and Evaluation on the testing dataset
+
+### Preliminary Evaluation
+
+Next, I use the model to make predictions on the test data as follows. 
+
+```{r}
+## Evaluate model on the testing set
+predictions <- mpg_linear_model %>% 
+    
+    predict(new_data = mpg_test)
+
+## Bind the columns
+testing_results <- mpg_test %>% select(manufacturer, model, hwy) %>% 
+    
+    bind_cols(predictions)
+```
+
+First, I plot the predicted versus the actual values on the test dataset. 
+
+```{r}
+testing_results %>% 
+    
+    ggplot(mapping = aes(x = hwy, y = .pred, col = manufacturer)) + 
+    
+    geom_point(shape = 1, size = 3, stroke = 2) + 
+    
+    geom_abline(col = "red") + 
+    
+    coord_obs_pred() +
+    
+    ggthemes::theme_clean()
+```
+
+The root mean squared error is `r testing_results %>% rmse(truth = hwy, estimate = .pred) %>% select(.estimate)`. 
+
+```{r}
+testing_results %>% 
+rmse(truth = hwy, estimate = .pred) %>% 
+    knitr::kable()
+```
+
+While the `coefficient of determination` is `r testing_results %>% rsq(truth = hwy, estimate = .pred) %>% select(.estimate)`. 
+
+```{r}
+testing_results %>% 
+rsq(truth = hwy, estimate = .pred) %>% 
+    knitr::kable()
+```
+
+## Advanced Model Evaluation
+
+The `last_fit` function of the `yardstick` package takes in the recipe, the model and the split object and does the following. 
+
+- Splits the data into test and train.
+- Runs the model on the training set.
+- Runs predictions on the test set. 
+- Produces model performance metrics using yardstick. 
+
+```{r}
+## We do the last fit that is much easier to work with
+model_last_fit <- linear_model %>% 
+  
+  last_fit(hwy ~ displ + factor(year) + factor(drv), split = mpg_split)
+
+## Get model evaluation metrics
+model_last_fit %>% 
+  
+  collect_metrics() %>% 
+  
+  knitr::kable()
+
+## Model predictions
+model_last_fit %>% 
+  
+  collect_predictions() %>% 
+  
+  knitr::kable()
+```
+

@@ -1,0 +1,33 @@
+---
+title: "Pressure versus temperature"
+author: "John Karuitha"
+date: "5/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+```
+
+## Modelling Pressure vs Temperature using Tidymodels
+
+```{r}
+head(pressure)
+
+nrow(pressure)
+
+split_object <- initial_split(pressure, prop = 0.7, strata = temperature)
+
+pressure_train <- split_object %>% training()
+
+pressure_test <- split_object %>% testing()
+```
+
+```{r}
+qplot(temperature, pressure, data = pressure, geom = "line")
+```
+

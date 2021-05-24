@@ -1,0 +1,30 @@
+---
+title: "Modelling Medical Insurance Costs"
+subtitle: "Linear Regression Using Tidymodels"
+author: "John King'athia Karuitha"
+date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+## Background
+
+I use a sample of insurance data costs from kagle to model the costs of health insurance. The data is available on this [link](https://www.kaggle.com/mirichoi0218/insurance). The data contains variables that could be used to predict the cost of health insurance. These variables include age,sex,bmi,children,smoker,region,and charges. The charges are the dependent variables that we seek to predict using all the other variables. 
