@@ -1,22 +1,27 @@
 ---
-title: "Modelling Medical Insurance Costs"
-subtitle: "Linear Regression Using Tidymodels"
+title: "**GETTING STARTED WITH `TIDYMODELS`**"
+subtitle: "***Modelling Medical Insurance Costs with Linear Regression and `tidymodels`***"
 author: "John King'athia Karuitha"
 date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
 output:
   rmdformats::readthedown:
     highlight: kate
+    code_folding: hide
+bibliography: citations.bib
 ---
 
 
 ```{r setup, include=FALSE}
 library(knitr)
 library(rmdformats)
+library(tidyverse)
+library(`tidymodels`)
+library(kableExtra)
 
 ## Global options
 options(max.print="75")
-opts_chunk$set(echo=FALSE,
-	             cache=TRUE,
+opts_chunk$set(echo=TRUE,
+	           cache=TRUE,
                prompt=FALSE,
                tidy=TRUE,
                comment=NA,
@@ -25,6 +30,329 @@ opts_chunk$set(echo=FALSE,
 opts_knit$set(width=75)
 ```
 
-## Background
+## **Background**
 
-I use a sample of insurance data costs from kagle to model the costs of health insurance. The data is available on this [link](https://www.kaggle.com/mirichoi0218/insurance). The data contains variables that could be used to predict the cost of health insurance. These variables include age,sex,bmi,children,smoker,region,and charges. The charges are the dependent variables that we seek to predict using all the other variables. 
+>The `tidymodels` framework is a collection of packages for modeling and machine learning using tidyverse principles <https://www.`tidymodels`.org/>.
+
+The idea behind `tidymodels` is to address the inconsistency problem prevalent in `R` [@kuhn2020tidymodels]. Given that different machine learning engines were developed by different people, the terminologies and steps tend to differ across these engines. The `caret` package, which has been the bedrock of machine learning in `R`, did not adequately address these inconsistency issues. The developer of `caret`, Marx Kuhn, has been at the forefront of developing `tidymodels` alongside other data scientists at `R Studio`. The `tidymodels` framework provides a standardized framework for fitting `machine learning` models by providing a uniform syntax. You can read more on `tidymodels` [here](https://www.`tidymodels`.org/) and [here](https://rviews.rstudio.com/2020/04/21/the-case-for-`tidymodels`/) and [here](http://www.rebeccabarter.com/blog/2020-03-25_machine_learning/).  
+
+To install `tidymodels`, use the following code. 
+
+```
+install.packages("tidymodels")
+```
+
+The `tidymodels` framework consists of several key packages for sampling, feature engineering, fitting, hyper-parameter tuning, and evaluation of `machine learning` models. 
+
+1. Sampling: The `rsample` package allows for the creation of training and testing data sets. 
+2. Feature engineering: The `recipes` package allows for creation of new variables by manipulating the existing variables. 
+2. Model fitting: The `parsnip` package provides a consistent framework for fitting models. 
+3. Model tuning: The `dials` and `tune` packages provide functions for tuning parameters. 
+3. Model evaluation: The `yardstick` package allows for model evaluation. 
+
+## **Objective and Caveats**
+In this exercise, I use a simple example of medical insurance to illustrate beginner concepts in `tidymodels`. This write up is NOT for intermediate or advanced users of `tidymodels`. Again, the exercise aims at illustrating basic steps in using `tidymodels` and NOT on model fitting and performance. I assume basic knowledge of `R` programming language and statistical analysis environment [@dearR]. 
+
+> **NB: Click on `Code` to view the R code associated with any of the steps**. 
+
+## **The Data**
+
+I use a sample of insurance data costs from Kagle to model health insurance costs using linear regression. The data is available on this [link](https://www.kaggle.com/mirichoi0218/insurance). However, I have loaded the data into my Github account. The direct link to the data is <https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv>. The data contain variables to predict the cost of health insurance. These variables include age,sex,body mass index (BMI),children,smoker,and region. The variable `charges` is the dependent variable that I seek to predict using all the other variables provided. I start by reading the data. 
+
+```{r}
+## Reading in the data
+insurance_data <- read_csv("https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv") %>% 
+    
+    mutate(across(where(is_character),as_factor))
+
+
+## The first six rows of the data
+head(insurance_data) %>% 
+    
+    ## Convert variable names to upper case
+    set_names(names(.) %>% 
+                
+                str_to_upper()) %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "First 6 Rows of the Insurance Data", booktabs = TRUE) %>% 
+    
+    kableExtra::kable_styling(full_width = TRUE, bootstrap_options = "striped")
+```
+
+The data has `r nrow(insurance_data)` rows and `r ncol(insurance_data)` columns. I start by splitting the data into a training set and a testing set and then proceed to model the data and evaluate the model performance on the test data. 
+
+
+## **The Training Set and Testing Set**
+
+I use the `rsample` package to split the data into training and testing sets. The `rsample` `initial_split` function takes the following inputs: the data, the proportion of the data that will go into the training set (prop), and the strata used to divide the data (strata). I split the data into two parts, the training set and the test set, with proportions of 75% and 25%, respectively. 
+
+```{r}
+## Create a split object with 75% of the data in training set
+insurance_split <- initial_split(insurance_data, 
+                                 
+                prop = 0.75, strata = charges)
+
+## generate the training set
+insurance_training <- insurance_split %>% 
+    
+    training()
+
+## generate the testing set
+insurance_testing <- insurance_split %>% 
+    
+    testing()
+```
+
+The training set has `r nrow(insurance_training)` observations while the testing set has `r nrow(insurance_testing)` observations. 
+
+## **Exploratory Data Analysis**
+
+I summarise and visualize the training data in this section. 
+```{r}
+## The data
+insurance_training %>% 
+  
+  
+    ## Use ggally to run pairwise graphs  
+    GGally::ggpairs(mapping = aes(col = sex)) + 
+    
+    ## Choose colors
+    scale_color_manual(values = c("indianred4", "grey")) + 
+    
+    ## Choose colors
+    scale_fill_manual(values = c("indianred4", "grey")) + 
+  
+  ## Add title
+  labs(title = "Pairwise Visualisation of the Health Insurance Data")
+```
+
+The summary of the numeric variables is as follows
+
+```{r}
+## The data
+insurance_training %>% 
+    
+    ## Select numeric data
+    select(where(is.numeric)) %>% 
+    
+    ## Get summary statistics
+    skimr::skim_without_charts() %>% 
+    
+    ## Select important variables
+    select(-skim_type, -complete_rate) %>% 
+    
+    ## Do a nice table
+    knitr::kable(caption = "Summary of Numeric Variables in the Training Set")
+```
+
+
+The table below shows the summary for the factor variables. 
+
+```{r}
+## The data
+table(insurance_training$sex) %>% 
+    
+    ## Do a nice table
+    knitr::kable(col.names = c("Sex", "Freq"))
+
+###################################################
+## The data
+table(insurance_training$smoker) %>% 
+    
+    ## Do a nice table
+    knitr::kable(col.names = c("Smoker", "Freq"))
+
+##################################################
+## The data
+table(insurance_training$region) %>% 
+    
+    ## Do a nice table
+    knitr::kable(col.names = c("Region", "Freq"))
+```
+
+
+## **Running the Linear Regression Model**
+
+The `parsnip` package provides a standardized interface for running numerous machine learning models with a unified syntax, unlike `caret`, where one has to memorize different terminologies used in separate packages. I start by defining the linear regression model [@aiken2012multiple]. 
+
+```{r}
+## Specify the model to run
+linear_regression_model <- linear_reg() %>% 
+    
+    ## Set the engine to be used in running the regression
+    set_engine("lm") %>% 
+    
+    ## Specify the kind of model: regression or classification
+    set_mode("regression")
+```
+
+Next, I run the linear regression using the `fit` function from `parsnip`, specifying the variables as we do when running a regression using the `lm` function. 
+
+```{r}
+## Fit the model on training data
+linear_regression_insurance <- linear_regression_model %>% 
+    
+    fit(charges ~ age + sex + bmi + children + smoker + region, 
+        
+        data = insurance_training)
+
+## Create a tibble of the regression outputs
+broom::tidy(linear_regression_insurance) %>% 
+    
+    ## make a nice table
+    knitr::kable(caption = "Output of the Linear Regression Model", booktabs = TRUE) %>% 
+    
+    kableExtra::kable_styling(full_width = TRUE, bootstrap_options = "striped")
+```
+
+The model shows that all the variables except sex are significant drivers of health insurance charges. Age, BMI, children, and smoking are all positively related to health insurance charges. For the region, compared to North East, individuals from all the other areas have, on average, lower health insurance charges. However, the coefficient for the North West region is not significant. 
+
+## **Model Predictions**
+
+I use the test data to predict the charges for patients in the test set. The `predict` function serves this purpose. The predict function generates a new variable, `.pred` with the same order and number of columns with the test data. 
+
+```{r}
+## Use the model to make predictions on the test data
+insurance_predictions <- linear_regression_insurance %>% 
+    
+    predict(new_data = insurance_testing)
+
+## View the first six rows of the predictions
+head(insurance_predictions) %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "First 6 Rows of the Predictions")
+```
+
+I attach this prediction to the original dataset. 
+
+```{r}
+## Attach the predictions to the testing data
+insurance_testing_with_predictions <- insurance_testing %>% 
+    
+    bind_cols(insurance_predictions)
+
+## View the first six rows of data with predictions
+head(insurance_testing_with_predictions) %>% 
+    
+    ## Change the case of variable names
+    set_names(names(.) %>% str_to_sentence()) %>% 
+    
+    ## make a nice table
+    knitr::kable(caption = "First 6 Rows of the Testing Set with Predictions")
+```
+
+
+## **Model Evaluation**
+I first plot the predicted charges against the actual charges to visualize how well the model fits the data.
+
+```{r}
+## Plot predicted versus actual charges
+insurance_testing_with_predictions %>% 
+    
+    ## Call ggplot for plotting and give X and Y axis
+    ggplot(mapping = aes(x = charges, y = .pred, col = sex)) + 
+    
+    ## Geom_point to do scatter plot
+    geom_point(shape = 1, size = 2, alpha = 0.5, stroke = 3) + 
+    
+    ## geom_abline to do a line of best fit
+    geom_abline(col = "purple") + 
+    
+    ## Harmonize X and Y axis scales
+    coord_obs_pred() + 
+    
+    ## Put a nice theme 
+    ggthemes::theme_clean() + 
+  
+    ## Add labels and titles
+    labs(x = "Actual Charges", y = "Predicted Charges", 
+         
+         title = "Actual versus Predicted Charges") + 
+    
+    scale_color_manual(values = c("red", "blue")) + 
+    
+    ## Remove legend title
+    theme(legend.title = element_blank())
+```
+
+
+The `yardstick` package provides a set of functions for evaluating models. For linear regression models, the root mean squared error (RMSE) and the coefficient of determination($r^{2}$) are the prominent evaluation metrics. I compute these two metrics in turns. 
+
+```{r}
+## Compute the root mean squared error (RMSE)
+insurance_testing_with_predictions %>% 
+    
+    rmse(truth = charges, estimate = .pred) %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "The RMSE on the Test Set")
+```
+
+Likewise, the coefficient of determination is as follows. 
+
+```{r}
+## Get the coefficient of determination
+insurance_testing_with_predictions %>% 
+    
+    rsq(truth = charges, estimate = .pred) %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "The RMSE on the Test Set")
+```
+
+## **Further Steps**
+
+The `tidymodels` ecosystem provides for an even easier route to modelling using the `last_fit` function. The `last_fit` function takes in the model type (in our case, the `linear_regression_model`), the model specification (that is, the dependent and independent variables), and the split object. The function then runs the entire model as follows. 
+
+1. It splits the data into training and testing sets. 
+2. It runs the model on the training set. 
+3. Makes predictions and evaluates the model on the testing set. 
+
+After this, one can run the `collect_predictions` and `collect_metrics` functions to get the model predictions on the test set and the evaluation metrics (RMSE and $R^{2}$), respectively. 
+
+```{r}
+## Specify the model
+insurance_model_final_fit <- linear_regression_model %>% 
+    
+    ## Specify the variables and the split object
+    last_fit(charges ~ age + sex + bmi + children + smoker + region, 
+        
+        split = insurance_split)
+```
+
+Here I get the predictions. Note that the tibble consists of the predictions of the dependent variable and the actual value of the dependent variable, in this case, charges. In this case, I have just presented the first ten observations. 
+
+```{r}
+## Get the predictions on the test set
+insurance_model_final_fit %>% 
+    
+    collect_predictions() %>% 
+    
+    ## Get top 10 observations of the predictions
+    head(10) %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "Predictions on the Test Set")
+    
+```
+
+
+Finally, I collect the metrics for evaluation the model performance using the `collect_metrics` function. 
+
+```{r}
+## Get the evaluation metrics on the test set
+insurance_model_final_fit %>% 
+    
+    collect_metrics() %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "Model Evaluation Metrics on the Test Set")
+```
+
+## **Conclusion**
+
+In this exercise, I have used medical insurance data to illustrate basic concepts of `tidymodels`. It is notable how `tidymodels` introduces consistent syntax, which simplifies the modelling process. The model in this example could improve, for instance, by taking the log of the skewed independent variable `charges`. However, this exercise aimed not to optimize the model but to illustrate the use of `tidymodels`. 
+
+## **References**

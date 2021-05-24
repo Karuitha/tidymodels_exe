@@ -1,3 +1,0 @@
-"0","testing_results %>% "
-"0","rsq(truth = hwy, estimate = .pred) %>% "
-"0","    knitr::kable()"

@@ -1,3 +1,0 @@
-"0","testing_results %>% "
-"0","rmse(truth = hwy, estimate = .pred) %>% "
-"0","    knitr::kable()"

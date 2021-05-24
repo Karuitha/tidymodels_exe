@@ -1,8 +1,0 @@
-"0","set.seed(96, sample.kind = ""Rounding"")"
-"0",""
-"0","mpg_split <- initial_split(mpg, prop = 0.6, strata = cty)"
-"0",""
-"0","mpg_training <- mpg_split %>% training()"
-"0",""
-"0","mpg_test <- mpg_split %>% testing()"
-"0",""
