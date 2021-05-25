@@ -654,8 +654,11 @@ charges
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## The data</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(insurance_training<span class="sc">$</span>sex) <span class="sc">%&gt;%</span> </span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Do a nice table</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Sex&quot;</span>, <span class="st">&quot;Freq&quot;</span>))</span></code></pre></div>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Sex&quot;</span>, <span class="st">&quot;Freq&quot;</span>), <span class="at">caption =</span> <span class="st">&quot;Summary of the Sex Variable&quot;</span>)</span></code></pre></div>
 <table>
+<caption>
+Summary of the Sex Variable
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -688,8 +691,11 @@ male
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">################################################### The data</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(insurance_training<span class="sc">$</span>smoker) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Do a nice table</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Smoker&quot;</span>, <span class="st">&quot;Freq&quot;</span>))</span></code></pre></div>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Smoker&quot;</span>, <span class="st">&quot;Freq&quot;</span>), <span class="at">caption =</span> <span class="st">&quot;Summary of the Smoker Variable&quot;</span>)</span></code></pre></div>
 <table>
+<caption>
+Summary of the Smoker Variable
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -722,8 +728,11 @@ yes
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">################################################## The data</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(insurance_training<span class="sc">$</span>region) <span class="sc">%&gt;%</span> </span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Do a nice table</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Region&quot;</span>, <span class="st">&quot;Freq&quot;</span>))</span></code></pre></div>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Region&quot;</span>, <span class="st">&quot;Freq&quot;</span>), <span class="at">caption =</span> <span class="st">&quot;Summary of the Region Variable&quot;</span>)</span></code></pre></div>
 <table>
+<caption>
+Summary of the Region Variable
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">

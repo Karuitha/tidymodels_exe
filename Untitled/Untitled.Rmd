@@ -154,21 +154,21 @@ The table below shows the summary for the factor variables.
 table(insurance_training$sex) %>% 
     
     ## Do a nice table
-    knitr::kable(col.names = c("Sex", "Freq"))
+    knitr::kable(col.names = c("Sex", "Freq"), caption = "Summary of the Sex Variable")
 
 ###################################################
 ## The data
 table(insurance_training$smoker) %>% 
     
     ## Do a nice table
-    knitr::kable(col.names = c("Smoker", "Freq"))
+    knitr::kable(col.names = c("Smoker", "Freq"), caption = "Summary of the Smoker Variable")
 
 ##################################################
 ## The data
 table(insurance_training$region) %>% 
     
     ## Do a nice table
-    knitr::kable(col.names = c("Region", "Freq"))
+    knitr::kable(col.names = c("Region", "Freq"), caption = "Summary of the Region Variable")
 ```
 
 
