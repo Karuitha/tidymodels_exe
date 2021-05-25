@@ -57,7 +57,7 @@ In this exercise, I use a simple example of medical insurance to illustrate begi
 
 ## **The Data**
 
-I use a sample of insurance data costs from Kagle to model health insurance costs using linear regression. The data is available on this [link](https://www.kaggle.com/mirichoi0218/insurance). However, I have loaded the data into my Github account. The direct link to the data is <https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv>. The data contain variables to predict the cost of health insurance. These variables include age,sex,body mass index (BMI),children,smoker,and region. The variable `charges` is the dependent variable that I seek to predict using all the other variables provided. I start by reading the data. 
+I use a sample of health insurance cost data from Kagle and linear regression to demonstrate `tidymodels`. The data is available on this [link](https://www.kaggle.com/mirichoi0218/insurance). However, I have loaded the data into my Github account. The direct link to the data is <https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv>. The data contain variables to predict the cost of health insurance. These variables include age,sex,body mass index (BMI),children,smoker,and region. I seek to predict health insurance `charges` using the independent variables provided. First, I read the data into `R`. 
 
 ```{r}
 ## Reading in the data

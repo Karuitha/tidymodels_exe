@@ -224,7 +224,7 @@
     </div>
     <div id="postamble" data-toggle="wy-nav-shift" class="status">
                   <p class="author"><span class="glyphicon glyphicon-user"></span> John King’athia Karuitha</p>
-                        <p class="date"><span class="glyphicon glyphicon-calendar"></span> Monday, May 24, 2021</p>
+                        <p class="date"><span class="glyphicon glyphicon-calendar"></span> Tuesday, May 25, 2021</p>
           </div>
    </div>
      
@@ -260,7 +260,7 @@
 </div>
 <div id="the-data" class="section level2">
 <h2><strong>The Data</strong></h2>
-<p>I use a sample of insurance data costs from Kagle to model health insurance costs using linear regression. The data is available on this <a href="https://www.kaggle.com/mirichoi0218/insurance">link</a>. However, I have loaded the data into my Github account. The direct link to the data is <a href="https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv" class="uri">https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv</a>. The data contain variables to predict the cost of health insurance. These variables include age,sex,body mass index (BMI),children,smoker,and region. The variable <code>charges</code> is the dependent variable that I seek to predict using all the other variables provided. I start by reading the data.</p>
+<p>I use a sample of health insurance cost data from Kagle and linear regression to demonstrate <code>tidymodels</code>. The data is available on this <a href="https://www.kaggle.com/mirichoi0218/insurance">link</a>. However, I have loaded the data into my Github account. The direct link to the data is <a href="https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv" class="uri">https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv</a>. The data contain variables to predict the cost of health insurance. These variables include age,sex,body mass index (BMI),children,smoker,and region. I seek to predict health insurance <code>charges</code> using the independent variables provided. First, I read the data into <code>R</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Reading in the data</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>insurance_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv&quot;</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    </span>
