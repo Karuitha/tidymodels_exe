@@ -1,0 +1,30 @@
+---
+title: "Analysing Bank Marketing Campaigns"
+subtitle: "Which factors drive a customer to open a Term Deposit?"
+author: "John Karuitha"
+date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    code_folding: hide
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+library(rmdformats)
+library(tidyverse)
+library(tidymodels)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
