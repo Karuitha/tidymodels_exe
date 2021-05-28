@@ -37,6 +37,9 @@ In this article, I use data from a commercial bank to develop a model for predic
 
 When sales executives reach out to customers, the goal is to make a persuasive case so that the customer will purchase a product or products and hence improve the banks sales and profitability. In this case, the data concerns customers contacted by the bank's sales executives regarding a term deposit service. The aim of the exercise is to develop a model to predict, based on the given variables whether or not a customer will subscribe to a term deposit with the bank. 
 
+## **Objectives and Caveats**
+
+
 ## **Data and Variables**
 
 The variables in the dataset fall into three categories; bank client data, data relating with the last contact with the customer in the current sales campaign, other attributes like number of contacts made with the customer, and country-level social and economic context attributes. I start by reading the data into `R`. 
@@ -118,7 +121,9 @@ I start by reading in the data and performing exploratory data analysis.
 
 ```{r}
 ## View the first six rows of the data
-head(bank_data) %>% knitr::kable(caption = "First Six Rows of Bank Data")
+head(bank_data) %>% 
+  knitr::kable(booktabs = TRUE, caption = "First Six Rows of Bank Data") %>% 
+  kableExtra::kable_styling(font_size = 10, bootstrap_options = "striped", full_width = TRUE)
     
 ```
 
