@@ -29,10 +29,16 @@ opts_knit$set(width=75)
 ## **Background**
 
 ```{r}
+## Load required libraries
 library(dslabs)
 library(tidymodels)
-data(heights)
 
+## Load the data
+data("heights")
+
+heights$sex <- factor(heights$sex, levels = c("Male", "Female"))
+
+## View data
 head(heights)
 nrow(heights)
 ```
@@ -63,7 +69,7 @@ linear_mode <- linear_reg() %>%
 ```{r}
 my_regression_fit <- linear_mode %>% 
     
-    fit(height ~ factor(sex), data = height_train)
+    fit(height ~ sex, data = height_train)
 
 broom::tidy(my_regression_fit)
 ```
