@@ -1,5 +1,5 @@
 ---
-title: "**GETTING STARTED WITH `TIDYMODELS`**"
+title: "**GETTING STARTED WITH `TIDYMODELS I`**"
 subtitle: "***Modelling Medical Insurance Costs with Linear Regression and `tidymodels`***"
 author: "John King'athia Karuitha"
 date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
@@ -15,7 +15,7 @@ bibliography: citations.bib
 library(knitr)
 library(rmdformats)
 library(tidyverse)
-library(`tidymodels`)
+library(tidymodels)
 library(kableExtra)
 
 ## Global options

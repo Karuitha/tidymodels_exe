@@ -1,0 +1,279 @@
+---
+title: "**GETTING STARTED WITH `TIDYMODELS II`**"
+subtitle: "***Modelling Medical Insurance Costs with Random Forests and `tidymodels`***"
+author: "John King'athia Karuitha"
+date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+    code_folding: hide
+bibliography: citations.bib
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+library(rmdformats)
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+library(GGally)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	           cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+
+theme_set(ggthemes::theme_wsj())
+
+doParallel::registerDoParallel()
+```
+
+## **Background**
+
+>The `tidymodels` framework is a collection of packages for modeling and machine learning using tidyverse principles <https://www.`tidymodels`.org/>.
+
+The idea behind `tidymodels` is to address the inconsistency problem prevalent in `R` [@kuhn2020tidymodels]. Given that different machine learning engines were developed by different people, the terminologies and steps tend to differ across these engines. The `caret` package, which has been the bedrock of machine learning in `R`, did not adequately address these inconsistency issues. The developer of `caret`, Marx Kuhn, has been at the forefront of developing `tidymodels` alongside other data scientists at `R Studio`. The `tidymodels` framework provides a standardized framework for fitting `machine learning` models by providing a uniform syntax. You can read more on `tidymodels` [here](https://www.`tidymodels`.org/) and [here](https://rviews.rstudio.com/2020/04/21/the-case-for-`tidymodels`/) and [here](http://www.rebeccabarter.com/blog/2020-03-25_machine_learning/).  
+
+To install `tidymodels`, use the following code. 
+
+```
+install.packages("tidymodels")
+```
+
+The `tidymodels` framework consists of several key packages for sampling, feature engineering, fitting, hyper-parameter tuning, and evaluation of `machine learning` models. 
+
+1. Sampling: The `rsample` package allows for the creation of training and testing data sets. 
+2. Feature engineering: The `recipes` package allows for creation of new variables by manipulating the existing variables. 
+2. Model fitting: The `parsnip` package provides a consistent framework for fitting models. 
+3. Model tuning: The `dials` and `tune` packages provide functions for tuning parameters. 
+3. Model evaluation: The `yardstick` package allows for model evaluation. 
+
+## **Objective and Caveats**
+In this exercise, I use a simple example of medical insurance to illustrate beginner concepts in `tidymodels`. This write up is NOT for intermediate or advanced users of `tidymodels`. Again, the exercise aims at illustrating basic steps in using `tidymodels` and NOT on model fitting and performance. I assume basic knowledge of `R` programming language and statistical analysis environment [@dearR]. 
+
+> **NB: Click on `Code` to view the R code associated with any of the steps**. 
+
+## **The Data**
+
+I use a sample of health insurance cost data from Kagle and linear regression to demonstrate `tidymodels`. The data is available on this [link](https://www.kaggle.com/mirichoi0218/insurance). However, I have loaded the data into my Github account. The direct link to the data is <https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv>. The data contain variables to predict the cost of health insurance. These variables include age,sex,body mass index (BMI),children,smoker,and region. I seek to predict health insurance `charges` using the independent variables provided. First, I read the data into `R`. 
+
+```{r}
+## Reading in the data
+insurance_data <- read_csv("https://raw.githubusercontent.com/Karuitha/tidymodels_exe/master/insurance.csv") 
+
+## The first six rows of the data
+head(insurance_data) %>% 
+    
+    ## Convert variable names to upper case
+    set_names(names(.) %>% 
+                
+                str_to_upper()) %>% 
+    
+    ## Make a nice table
+    knitr::kable(caption = "First 6 Rows of the Insurance Data", booktabs = TRUE) %>% 
+    
+    kableExtra::kable_styling(full_width = TRUE, bootstrap_options = "striped")
+```
+
+The data has `r nrow(insurance_data)` rows and `r ncol(insurance_data)` columns. I start by splitting the data into a training set and a testing set and then proceed to model the data and evaluate the model performance on the test data. 
+
+
+## **The Training Set and Testing Set**
+
+I use the `rsample` package to split the data into training and testing sets. The `rsample` `initial_split` function takes the following inputs: the data, the proportion of the data that will go into the training set (prop), and the strata used to divide the data (strata). I split the data into two parts, the training set and the test set, with proportions of 75% and 25%, respectively. 
+
+```{r}
+set.seed(77, sample.kind = "Rounding")
+## Create a split object with 75% of the data in training set
+insurance_split <- initial_split(insurance_data, 
+                                 
+                prop = 0.75, strata = charges)
+
+## generate the training set
+insurance_training <- insurance_split %>% 
+    
+    training()
+
+## generate the testing set
+insurance_testing <- insurance_split %>% 
+    
+    testing()
+```
+
+The training set has `r nrow(insurance_training)` observations while the testing set has `r nrow(insurance_testing)` observations. 
+
+## **Exploratory Data Analysis**
+
+I summarise and visualize the training data in this section. 
+```{r}
+## The data
+insurance_training %>% ggpairs(mapping = aes(col = sex)) + scale_color_manual(values = c("indianred4", "grey")) + scale_fill_manual(values = c("indianred4", "grey")) + labs(title = "Pairwise Visualisation of the Health Insurance Data")
+```
+
+The summary of the numeric variables is as follows
+
+```{r}
+## The data
+insurance_training %>% select(where(is.numeric)) %>% skimr::skim_without_charts() %>% select(-skim_type, -complete_rate) %>% knitr::kable(caption = "Summary of Numeric Variables in the Training Set")
+```
+
+
+The table below shows the summary for the factor variables. 
+
+```{r}
+## The data
+table(insurance_training$sex) %>% knitr::kable(col.names = c("Sex", "Freq"), caption = "Summary of the Sex Variable")
+
+###################################################
+## The data
+table(insurance_training$smoker) %>% knitr::kable(col.names = c("Smoker", "Freq"), caption = "Summary of the Smoker Variable")
+
+##################################################
+## The data
+table(insurance_training$region) %>% knitr::kable(col.names = c("Region", "Freq"), caption = "Summary of the Region Variable")
+```
+
+
+## **Specifying the Models**
+
+I will illustrate `tidymodels` using three models.
+
+- The `linear regression` model.
+- The `decision tree` model.
+- The `random forests` model.
+
+The following lines of code set up these three models, starting with the `linear regression` model. 
+
+```{r}
+## Specify the linear model to run 
+linear_regression_model <- linear_reg() %>% set_engine("lm") %>% set_mode("regression")
+```
+
+This code specifies the decision tree model. 
+```{r}
+## set up the decision tree to run
+decision_tree_model <- decision_tree() %>% set_engine("rpart") %>% set_mode("regression")
+
+```
+
+The model below specifies the random forest model. 
+
+```{r}
+random_forest_model <- rand_forest() %>% set_engine("ranger") %>% set_mode("regression") %>% set_args(importance = "impurity")
+```
+
+
+## **Data Pre-processing for cross validation**
+
+In this section, I will illustrate the application of cross validation. Cross validation allows for the comparison of different machine learning models. Cross validation works by partitioning the training data set into folds. Each of the folds is then used as an evaluation set while the other sets combined serve a training set. For instance, where we have a five-fold cross validation, then we run five models with each fold serving as a testing set in one model.
+
+In this section, I do five-fold cross validation on the data. First, I specify the cross validation folds. 
+
+```{r}
+set.seed(123, sample.kind = "Rounding")
+validation_folds <- vfold_cv(insurance_training, strata = charges, v = 5)
+```
+
+I preprocess the data  for cross validation by logging the charges and making all the categorical variables to be dummies. I specify the recipe as below. 
+
+```{r}
+validation_recipe <- recipe(charges ~ ., data = insurance_training) %>% step_dummy(all_nominal_predictors()) %>% step_log(all_outcomes()) %>% prep()
+```
+
+Next, I fit the model to the resamples and evaluate each of the models. 
+
+### The Linear Model
+
+I first run a linear regression model on the resamples and collect the metrics; root mean squared error (`RMSE`) and coeffciienct of determination ($R^2$).
+
+```{r}
+## Fit the validation models using the linear regression model.
+linear_validation_model <- workflow() %>% add_recipe(validation_recipe) %>% add_model(linear_regression_model) %>% fit_resamples(validation_folds)
+```
+
+
+```{r}
+## Collect the linear regression model validation metrics
+linear_validation_model %>% collect_metrics()
+```
+
+### The Decision Tree Model
+
+Here, I fit the decision tree model and collect the metrics. 
+
+```{r}
+## Fit the validation models using the decision tree model.
+decision_validation_model <- workflow() %>% add_recipe(validation_recipe) %>% add_model(decision_tree_model) %>% fit_resamples(validation_folds)
+```
+
+
+```{r}
+## Collect the decision tree model validation metrics
+decision_validation_model %>% collect_metrics()
+```
+
+### The Random Forest Model
+
+Here, I run the random forest model on the resamples. 
+
+```{r}
+set.seed(345, sample.kind = "Rounding")
+## Fit the validation models using the random forest model.
+rf_validation_model <- workflow() %>% add_recipe(validation_recipe) %>% add_model(random_forest_model) %>% fit_resamples(validation_folds)
+```
+
+And then collect the metrics
+
+```{r}
+## Collect the random forest model validation metrics
+rf_validation_model %>% collect_metrics()
+```
+
+
+The metrics show that the random forest model does better in all the cases. So, I settle for the random forest model to develop the machine learning model. 
+
+
+## **Running the Random Forest Model**
+
+The `parsnip` package provides a standardized interface for running numerous machine learning models with a unified syntax, unlike `caret`, where one has to memorize different terminologies used in separate packages. I start by defining the linear regression model [@aiken2012multiple]. 
+
+In this section, I run the random forest model and extract the metrics. 
+
+```{r}
+random_forest_model_test <- workflow() %>% add_model(random_forest_model) %>% add_recipe(validation_recipe) %>% fit(data = insurance_testing)
+```
+
+Again the model shows that the most important drivers of medical insurance claims are smoking and age, while the least important are region and sex. Thus, insurance companies should pay special attention to smokers and the elderly. 
+
+```{r}
+random_forest_model_test %>% pull_workflow_fit() %>% vip::vip(aesthetics = list(fill = "skyblue"))
+```
+
+
+
+
+
+## **Using the Last Fit Function**
+
+Next, I run the random forests model, this time using the last fit function that splits the data, runs the model on the training set, does evaluation on the testing set and generates the evaluation metrics, in this case RMSE and $R^2$.  
+
+```{r}
+set.seed(600, sample.kind = "Rounding")
+## Fit the model on training data
+random_forest_model_last_fit <-  workflow() %>% add_model(random_forest_model) %>% add_recipe(validation_recipe) %>% last_fit(split = insurance_split)
+```
+
+The random forest model does even better on the testing set with $R^2$ of 81% and a RMSE of 0.4.  
+
+```{r}
+random_forest_model_last_fit %>% collect_metrics()
+```
+
+## **References**
